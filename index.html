@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>सोना / चांदी कैलकुलेटर | Gold &amp; Silver Price Calculator</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+        --accent: #f2c14e;
+        --accent-2: #c9931f;
+        --accent-soft: rgba(242, 193, 78, .14);
+        --accent-line: rgba(242, 193, 78, .35);
+        --glow: rgba(242, 193, 78, .22);
+    }
+
+    /* चांदी चुनने पर पूरा थीम सिल्वर हो जाता है */
+    body[data-metal="silver"] {
+        --accent: #e2e8f0;
+        --accent-2: #94a3b8;
+        --accent-soft: rgba(226, 232, 240, .10);
+        --accent-line: rgba(226, 232, 240, .30);
+        --glow: rgba(226, 232, 240, .16);
+    }
+
+    html, body { min-height: 100%; }
+
+    body {
+        font-family: 'Inter', 'Noto Sans Devanagari', system-ui, -apple-system, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+        position: relative;
+        overflow-x: hidden;
+        color: #e9eefb;
+        background: #070a11;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* ================= ज्वेलरी बैकग्राउंड (हल्का) ================= */
+    .bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+
+    /* नरम रोशनी / गहराई */
+    .bg::before {
+        content: "";
+        position: absolute;
+        inset: -20%;
+        background:
+            radial-gradient(760px 520px at 15% 0%, var(--glow), transparent 62%),
+            radial-gradient(700px 620px at 92% 100%, rgba(90, 130, 255, .14), transparent 62%),
+            radial-gradient(520px 420px at 78% 12%, rgba(255, 255, 255, .045), transparent 65%);
+        transition: background .5s ease;
+    }
+
+    /* हल्के बोकेह लाइट-सर्कल */
+    .bg::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            radial-gradient(circle at 12% 78%, rgba(255,255,255,.06) 0 2px, transparent 3px),
+            radial-gradient(circle at 26% 22%, rgba(255,255,255,.05) 0 1.5px, transparent 2.5px),
+            radial-gradient(circle at 68% 86%, rgba(255,255,255,.05) 0 2px, transparent 3px),
+            radial-gradient(circle at 88% 40%, rgba(255,255,255,.04) 0 1.5px, transparent 2.5px),
+            radial-gradient(circle at 44% 60%, rgba(255,255,255,.035) 0 2px, transparent 3px);
+        opacity: .9;
+    }
+
+    /* धातु की आकृतियाँ: डायमंड, अंगूठी, स्पार्कल */
+    .bg-motifs {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: .085;
+        animation: breathe 12s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+        0%, 100% { opacity: .07; }
+        50%      { opacity: .12; }
+    }
+
+    .bg-motifs .m {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 1.2;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+        vector-effect: non-scaling-stroke;
+        transition: stroke .45s ease;
+    }
+
+    .bg-motifs .m-fill {
+        fill: var(--accent);
+        stroke: none;
+        opacity: .55;
+    }
+
+    /* ================= कार्ड ================= */
+    .card {
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 440px;
+        padding: 26px 24px 24px;
+        border-radius: 24px;
+        background: linear-gradient(180deg, rgba(18, 23, 36, .88), rgba(11, 15, 25, .82));
+        border: 1px solid rgba(255, 255, 255, .09);
+        box-shadow:
+            0 30px 60px -22px rgba(0, 0, 0, .9),
+            inset 0 1px 0 rgba(255, 255, 255, .07);
+        backdrop-filter: blur(22px) saturate(120%);
+        -webkit-backdrop-filter: blur(22px) saturate(120%);
+    }
+
+    /* ---------- Header ---------- */
+    .head { text-align: center; margin-bottom: 22px; }
+
+    .badge {
+        width: 48px; height: 48px;
+        margin: 0 auto 12px;
+        display: grid; place-items: center;
+        font-size: 19px; color: #1a1405;
+        border-radius: 15px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 10px 26px -6px var(--glow);
+        transition: background .35s, box-shadow .35s;
+    }
+
+    .head h1 {
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: .2px;
+        color: #f2f6ff;
+    }
+
+    .head p {
+        margin-top: 6px;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        color: #7d8aa2;
+    }
+
+    /* ---------- Metal toggle ---------- */
+    .toggle {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        padding: 6px;
+        margin-bottom: 22px;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, .05);
+        border: 1px solid rgba(255, 255, 255, .08);
+    }
+
+    .metal-btn {
+        padding: 11px 8px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        color: #9aa7bd;
+        background: transparent;
+        border: 0;
+        border-radius: 11px;
+        cursor: pointer;
+        transition: all .25s ease;
+    }
+
+    .metal-btn:hover { color: #e9eefb; }
+
+    .metal-btn.active {
+        color: #171203;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 8px 18px -6px var(--glow);
+    }
+
+    /* ---------- Fields ---------- */
+    .field { margin-bottom: 16px; }
+
+    .field label {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #a8b3c7;
+    }
+
+    .hint { font-size: 12px; font-weight: 500; color: #6d7b92; }
+
+    .input-wrap { position: relative; display: flex; align-items: center; }
+
+    .prefix, .suffix {
+        position: absolute;
+        font-size: 14px;
+        font-weight: 600;
+        color: #7b89a0;
+        pointer-events: none;
+    }
+    .prefix { left: 15px; }
+    .suffix { right: 15px; }
+
+    input[type="number"] {
+        width: 100%;
+        padding: 13px 16px;
+        font-family: inherit;
+        font-size: 15.5px;
+        font-weight: 600;
+        color: #eef3ff;
+        background: rgba(255, 255, 255, .05);
+        border: 1px solid rgba(255, 255, 255, .10);
+        border-radius: 12px;
+        outline: none;
+        transition: all .22s ease;
+        -moz-appearance: textfield;
+    }
+
+    .has-prefix input { padding-left: 34px; }
+    .has-suffix input { padding-right: 34px; }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    input::placeholder { color: #5b6880; font-weight: 500; }
+
+    input:focus {
+        border-color: var(--accent-line);
+        background: rgba(255, 255, 255, .08);
+        box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    /* ---------- Quick chips ---------- */
+    .chips { display: flex; gap: 8px; margin-top: 10px; }
+
+    .chips button {
+        flex: 1;
+        padding: 8px 6px;
+        font-family: inherit;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #9aa7bd;
+        background: rgba(255, 255, 255, .04);
+        border: 1px solid rgba(255, 255, 255, .09);
+        border-radius: 9px;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+    .chips button:hover { color: #e9eefb; border-color: rgba(255, 255, 255, .22); }
+
+    .chips button.active {
+        color: #171203;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        border-color: transparent;
+    }
+
+    /* ---------- Results ---------- */
+    .results {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px dashed rgba(255, 255, 255, .12);
+    }
+
+    .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        padding: 8px 0;
+        font-size: 13.5px;
+        color: #93a0b6;
+    }
+
+    .row .val {
+        font-weight: 600;
+        color: #e6ecf9;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .final {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-top: 16px;
+        padding: 16px 18px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--accent-soft), rgba(255, 255, 255, .02));
+        border: 1px solid var(--accent-line);
+        box-shadow: 0 14px 34px -18px var(--glow);
+        transition: border-color .3s, background .3s;
+    }
+
+    .final span {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: .4px;
+        color: #9aa7bd;
+    }
+
+    .final strong {
+        font-size: 27px;
+        font-weight: 800;
+        letter-spacing: -.4px;
+        font-variant-numeric: tabular-nums;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .final small { font-size: 11px; color: #7b89a0; }
+
+    @media (max-width: 400px) {
+        .card { padding: 22px 18px; border-radius: 20px; }
+        .head h1 { font-size: 17px; }
+        .final strong { font-size: 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bg-motifs { animation: none; opacity: .09; }
+    }
+</style>
+</head>
+<body data-metal="gold">
+
+<!-- ================= ज्वेलरी बैकग्राउंड ================= -->
+<div class="bg" aria-hidden="true">
+    <svg class="bg-motifs" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+            <pattern id="jewel" width="150" height="150" patternUnits="userSpaceOnUse" patternTransform="rotate(-8)">
+                <!-- डायमंड / नग -->
+                <polygon class="m" points="36,20 52,20 60,32 44,52 28,32" />
+                <path class="m" d="M28,32 L44,32 L60,32 M44,32 L44,52 M36,20 L44,32 L52,20" />
+
+                <!-- अंगूठी -->
+                <circle class="m" cx="112" cy="52" r="13" />
+                <polygon class="m" points="112,22 119,29 112,37 105,29" />
+
+                <!-- स्पार्कल -->
+                <path class="m" d="M32,96 l3.4,10.6 10.6,3.4 -10.6,3.4 -3.4,10.6 -3.4,-10.6 -10.6,-3.4 10.6,-3.4 Z" />
+
+                <!-- छोटा हीरा -->
+                <polygon class="m" points="112,112 120,120 112,130 104,120" />
+
+                <!-- बारीक बिंदु -->
+                <circle class="m-fill" cx="76" cy="76" r="1.6" />
+                <circle class="m-fill" cx="140" cy="140" r="1.3" />
+                <circle class="m-fill" cx="16" cy="140" r="1.3" />
+            </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#jewel)" />
+    </svg>
+</div>
+
+<main class="card">
+
+    <header class="head">
+        <div class="badge">◆</div>
+        <h1>सोना / चांदी कैलकुलेटर</h1>
+        <p>Gold &amp; Silver Price Calculator</p>
+    </header>
+
+    <!-- धातु चुनें -->
+    <div class="toggle" id="metalToggle">
+        <button class="metal-btn active" data-metal="gold">🥇 सोना</button>
+        <button class="metal-btn" data-metal="silver">🥈 चांदी</button>
+    </div>
+
+    <!-- रेट -->
+    <div class="field">
+        <label for="rate">रेट <span class="hint" id="rateHint">(10 ग्राम का)</span></label>
+        <div class="input-wrap has-prefix">
+            <span class="prefix">₹</span>
+            <input type="number" id="rate" inputmode="decimal" placeholder="price">
+        </div>
+    </div>
+
+    <!-- वजन -->
+    <div class="field">
+        <label for="weight">वजन <span class="hint">(ग्राम में)</span></label>
+        <div class="input-wrap has-suffix">
+            <input type="number" id="weight" step="0.001" inputmode="decimal" placeholder="0.00">
+            <span class="suffix">g</span>
+        </div>
+    </div>
+
+    <!-- मेकिंग चार्ज -->
+    <div class="field">
+        <label for="makingCharge">मेकिंग चार्ज <span class="hint">(% में)</span></label>
+        <div class="input-wrap has-suffix">
+            <input type="number" id="makingCharge" step="0.1" inputmode="decimal" placeholder="making charge kitne %">
+            <span class="suffix">%</span>
+        </div>
+        <div class="chips" id="chips">
+            <button data-val="0" class="active">0%</button>
+            <button data-val="8">8%</button>
+            <button data-val="12">12%</button>
+            <button data-val="15">15%</button>
+        </div>
+    </div>
+
+    <!-- ब्रेकडाउन -->
+    <div class="results">
+        <div class="row">
+            <span>प्रति ग्राम रेट</span>
+            <span class="val" id="perGram">₹0.00</span>
+        </div>
+        <div class="row">
+            <span>धातु की असली कीमत</span>
+            <span class="val" id="basePrice">₹0.00</span>
+        </div>
+        <div class="row">
+            <span>3% GST सहित (सिर्फ धातु)</span>
+            <span class="val" id="priceWithGst">₹0.00</span>
+        </div>
+        <div class="row">
+            <span id="mcRowLabel">मेकिंग चार्ज</span>
+            <span class="val" id="makingAmt">₹0.00</span>
+        </div>
+        <div class="row">
+            <span>GST (3%)</span>
+            <span class="val" id="gstAmt">₹0.00</span>
+        </div>
+
+        <div class="final">
+            <span>कुल देय राशि</span>
+            <strong id="finalPrice">₹0.00</strong>
+            <small>मेकिंग चार्ज + 3% GST सहित</small>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    const $ = (id) => document.getElementById(id);
+    let metal = 'gold';
+
+    function fmt(n) {
+        return '₹' + n.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function setMetal(value) {
+        metal = value;
+        document.body.dataset.metal = value;
+
+        document.querySelectorAll('.metal-btn').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.metal === value);
+        });
+
+        const hint = $('rateHint');
+        const rate = $('rate');
+
+        if (value === 'gold') {
+            hint.textContent = '(10 ग्राम का)';
+            rate.placeholder = '120000';
+        } else {
+            hint.textContent = '(1 किलो / 1000 ग्राम का)';
+            rate.placeholder = '95000';
+        }
+        calculate();
+    }
+
+    function calculate() {
+        const rate = parseFloat($('rate').value) || 0;
+        const weight = parseFloat($('weight').value) || 0;
+        const makingPercent = parseFloat($('makingCharge').value) || 0;
+
+        // 1 ग्राम की कीमत (सोना = 10 ग्राम पर, चांदी = 1000 ग्राम पर)
+        const perGram = (metal === 'gold') ? (rate / 10) : (rate / 1000);
+
+        // धातु की असली कीमत
+        const basePrice = perGram * weight;
+
+        // सिर्फ धातु पर 3% GST
+        const priceWithGst = basePrice + (basePrice * 0.03);
+
+        // मेकिंग चार्ज + GST
+        const makingAmount = basePrice * (makingPercent / 100);
+        const subtotal = basePrice + makingAmount;
+        const gst = subtotal * 0.03;
+        const finalPrice = subtotal + gst;
+
+        $('perGram').textContent = fmt(perGram);
+        $('basePrice').textContent = fmt(basePrice);
+        $('priceWithGst').textContent = fmt(priceWithGst);
+        $('makingAmt').textContent = fmt(makingAmount);
+        $('gstAmt').textContent = fmt(gst);
+        $('finalPrice').textContent = fmt(finalPrice);
+        $('mcRowLabel').textContent = 'मेकिंग चार्ज (' + makingPercent + '%)';
+
+        // चिप्स को इनपुट के साथ सिंक रखें
+        document.querySelectorAll('#chips button').forEach((btn) => {
+            btn.classList.toggle('active', parseFloat(btn.dataset.val) === makingPercent);
+        });
+    }
+
+    /* ---------- Events ---------- */
+    document.querySelectorAll('.metal-btn').forEach((btn) => {
+        btn.addEventListener('click', () => setMetal(btn.dataset.metal));
+    });
+
+    document.querySelectorAll('#chips button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            $('makingCharge').value = btn.dataset.val;
+            calculate();
+        });
+    });
+
+    ['rate', 'weight', 'makingCharge'].forEach((id) => {
+        $(id).addEventListener('input', calculate);
+    });
+
+    calculate();
+</script>
+
+</body>
+</html>
